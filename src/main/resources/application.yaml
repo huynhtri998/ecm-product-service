@@ -1,3 +1,6 @@
 spring:
   application:
     name: ecm-product
+
+  config:
+    import: "optional:configserver:http://localhost:8071/"
