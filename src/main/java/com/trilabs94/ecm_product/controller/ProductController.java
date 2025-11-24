@@ -5,7 +5,6 @@ import com.trilabs94.ecm_product.dto.ProductResponseDto;
 import com.trilabs94.ecm_product.service.IProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
