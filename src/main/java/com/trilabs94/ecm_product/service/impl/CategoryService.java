@@ -1,82 +1,97 @@
 package com.trilabs94.ecm_product.service.impl;
 
+import com.trilabs94.common_error_handler.exception.CustomerAlreadyExistsException;
+import com.trilabs94.common_error_handler.exception.ResourceAlreadyExistsException;
 import com.trilabs94.common_error_handler.exception.ResourceNotFoundException;
-import com.trilabs94.ecm_product.dto.CategoryDto;
-import com.trilabs94.ecm_product.dto.ProductDto;
+import com.trilabs94.ecm_product.dto.CategoryRequestDto;
+import com.trilabs94.ecm_product.dto.CategoryResponseDto;
 import com.trilabs94.ecm_product.entity.Category;
-import com.trilabs94.ecm_product.entity.Product;
 import com.trilabs94.ecm_product.mapper.CategoryMapper;
-import com.trilabs94.ecm_product.repository.ICategoryRepository;
+import com.trilabs94.ecm_product.repository.CategoryRepository;
+import com.trilabs94.ecm_product.repository.ProductRepository;
 import com.trilabs94.ecm_product.service.ICategoryService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class CategoryService implements ICategoryService {
-    private final ICategoryRepository categoryRepository;
+
+    private final CategoryRepository categoryRepository;
+    private final CategoryMapper categoryMapper;
+    private final ProductRepository productRepository;
 
     @Override
-    public List<CategoryDto> getAllCategories() {
-        return categoryRepository.findCategoryWithProducts()
+    @Transactional
+    public CategoryResponseDto createCategory(CategoryRequestDto requestDto) {
+        log.info("Creating new category with name={}", requestDto.getName());
+
+        if (categoryRepository.existsByNameIgnoreCase(requestDto.getName())) {
+            throw new ResourceAlreadyExistsException(
+                    "Category with name '%s' already exists".formatted(requestDto.getName())
+            );
+        }
+
+        Category category = categoryMapper.toEntity(requestDto);
+        Category saved = categoryRepository.save(category);
+        return categoryMapper.toResponseDto(saved);
+    }
+
+    @Override
+    @Transactional
+    public CategoryResponseDto updateCategory(Long id, CategoryRequestDto requestDto) {
+        log.info("Updating category id={}", id);
+
+        Category existing = categoryRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Category with id %d not found".formatted(id)));
+
+        categoryMapper.updateEntity(existing, requestDto);
+        Category saved = categoryRepository.save(existing);
+
+        return categoryMapper.toResponseDto(saved);
+    }
+
+    @Override
+    public CategoryResponseDto getCategoryById(Long id) {
+        log.info("Fetching category id={}", id);
+
+        Category category = categoryRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Category with id %d not found".formatted(id)));
+
+        return categoryMapper.toResponseDto(category);
+    }
+
+    @Override
+    public List<CategoryResponseDto> getAllCategories() {
+        log.info("Fetching all categories");
+
+        return categoryRepository.findAll()
                 .stream()
-                .map(CategoryMapper::toCategoryDto)
+                .map(categoryMapper::toResponseDto)
                 .toList();
     }
 
     @Override
-    public CategoryDto getCategoryById(Long id) {
-        return categoryRepository.findById(id)
-                .map(CategoryMapper::toCategoryDto)
-                .orElseThrow(
-                        () -> new ResourceNotFoundException("Category not found with id: " + id)
-                );
-    }
-
-    @Override
-    public CategoryDto createCategory(CategoryDto categoryDto) {
-        if(categoryRepository.existsByName(categoryDto.getName())){
-            throw new ResourceNotFoundException("Category already exists with name: " + categoryDto.getName());
-        } else {
-            Category category = CategoryMapper.toCategory(categoryDto);
-            for(ProductDto product : categoryDto.getProducts()){
-                Product prodEntity = new Product();
-                prodEntity.setName(product.getName());
-                prodEntity.setDescription(product.getDescription());
-                prodEntity.setPrice(product.getPrice());
-                prodEntity.setCreatedAt(LocalDateTime.now());
-                prodEntity.setCategory(category);
-                category.getProducts().add(prodEntity);
-            }
-
-            Category savedCategory = categoryRepository.save(category);
-            return CategoryMapper.toCategoryDto(savedCategory);
-        }
-    }
-
-    @Override
-    public CategoryDto updateCategory(Long id, CategoryDto categoryDto) {
-        return categoryRepository.findById(id)
-                .map(existingCategory -> {
-                    existingCategory.setName(categoryDto.getName());
-                    existingCategory.setDescription(categoryDto.getDescription());
-                    Category updatedCategory = categoryRepository.save(existingCategory);
-                    return CategoryMapper.toCategoryDto(updatedCategory);
-                })
-                .orElseThrow(
-                        () -> new ResourceNotFoundException("Category not found with id: " + id)
-                );
-    }
-
-    @Override
+    @Transactional
     public void deleteCategory(Long id) {
-        if (!categoryRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Category not found with id: " + id);
-        } else {
-            categoryRepository.deleteById(id);
+        log.info("Deleting category id={}", id);
+
+        Category category = categoryRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Category with id %d not found".formatted(id)));
+
+        if (productRepository.existsByCategoryId(id)) {
+            throw new ResourceAlreadyExistsException(
+                    "Cannot delete category id %d because there are existing products using this category"
+                            .formatted(id)
+            );
         }
+
+        categoryRepository.delete(category);
     }
 }

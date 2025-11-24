@@ -1,73 +1,64 @@
 package com.trilabs94.ecm_product.controller;
 
-import com.trilabs94.ecm_product.dto.CategoryDto;
+import com.trilabs94.ecm_product.dto.CategoryRequestDto;
+import com.trilabs94.ecm_product.dto.CategoryResponseDto;
 import com.trilabs94.ecm_product.service.ICategoryService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.net.URI;
 import java.util.List;
 
+@Slf4j
 @RestController
-@RequestMapping("/api/v1")
+@RequestMapping("/api/v1/categories")
 @RequiredArgsConstructor
-@Schema(
-        name = "Category Controller",
-        description = "REST API for categories"
-)
+@Validated
 public class CategoryController {
+
     private final ICategoryService categoryService;
 
-    @Operation(
-            summary = "Get All Categories",
-            description = "REST API to fetch all categories"
-    )
-    @GetMapping("/categories")
-    public ResponseEntity<List<CategoryDto>> getAllCategories() {
-        return ResponseEntity.ok().body(categoryService.getAllCategories());
+    @PostMapping
+    public ResponseEntity<CategoryResponseDto> createCategory(
+            @Valid @RequestBody CategoryRequestDto requestDto
+    ) {
+        CategoryResponseDto created = categoryService.createCategory(requestDto);
+
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(created.getId())
+                .toUri();
+
+        return ResponseEntity.created(location).body(created);
     }
 
-    @Operation(
-            summary = "Get Category By ID",
-            description = "REST API to fetch category by its ID"
-    )
-    @GetMapping("/categories/{id}")
-    public ResponseEntity<CategoryDto> getCategoryById(@PathVariable Long id) {
-        CategoryDto category = categoryService.getCategoryById(id);
-        if (category != null)
-            return ResponseEntity.ok().body(category);
-        else
-            return ResponseEntity.notFound().build();
+    @PutMapping("/{id}")
+    public ResponseEntity<CategoryResponseDto> updateCategory(
+            @PathVariable Long id,
+            @Valid @RequestBody CategoryRequestDto requestDto
+    ) {
+        CategoryResponseDto updated = categoryService.updateCategory(id, requestDto);
+        return ResponseEntity.ok(updated);
     }
 
-    @Operation(
-            summary = "Create New Category",
-            description = "REST API to create a new category"
-    )
-    @PostMapping("/categories")
-    public ResponseEntity<CategoryDto> createCategory(@RequestBody CategoryDto categoryDto) {
-        CategoryDto customerDto = categoryService.createCategory(categoryDto);
-        if (customerDto == null)
-            return ResponseEntity.badRequest().build();
-        return ResponseEntity.ok().body(categoryService.createCategory(categoryDto));
+    @GetMapping("/{id}")
+    public ResponseEntity<CategoryResponseDto> getCategoryById(@PathVariable Long id) {
+        CategoryResponseDto dto = categoryService.getCategoryById(id);
+        return ResponseEntity.ok(dto);
     }
 
-    @Operation(
-            summary = "Update Existing Category",
-            description = "REST API to update an existing category"
-    )
-    @PutMapping("/categories/{id}")
-    public ResponseEntity<CategoryDto> updateCategory(@PathVariable Long id, @RequestBody CategoryDto categoryDto) {
-        return ResponseEntity.ok().body(categoryService.updateCategory(id, categoryDto));
+    @GetMapping
+    public ResponseEntity<List<CategoryResponseDto>> getAllCategories() {
+        List<CategoryResponseDto> categories = categoryService.getAllCategories();
+        return ResponseEntity.ok(categories);
     }
 
-    @Operation(
-            summary = "Delete Category",
-            description = "REST API to delete a category by its ID"
-    )
-    @DeleteMapping("/categories/{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteCategory(@PathVariable Long id) {
         categoryService.deleteCategory(id);
         return ResponseEntity.noContent().build();

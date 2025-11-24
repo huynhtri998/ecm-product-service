@@ -1,26 +1,48 @@
 package com.trilabs94.ecm_product.mapper;
 
-import com.trilabs94.ecm_product.dto.ProductDto;
+import com.trilabs94.ecm_product.dto.ProductRequestDto;
+import com.trilabs94.ecm_product.dto.ProductResponseDto;
+import com.trilabs94.ecm_product.entity.Category;
 import com.trilabs94.ecm_product.entity.Product;
+import org.springframework.stereotype.Component;
 
+@Component
 public class ProductMapper {
 
-    public static ProductDto mapToProductDto(Product product) {
-        return ProductDto.builder()
-                .name(product.getName())
-                .description(product.getDescription())
-                .quantity(product.getQuantity())
-                .price(product.getPrice())
-                .createdAt(product.getCreatedAt())
+    public Product toEntity(ProductRequestDto dto, Category category) {
+        if (dto == null) return null;
+
+        return Product.builder()
+                .name(dto.getName())
+                .description(dto.getDescription())
+                .availableQuantity(dto.getAvailableQuantity())
+                .price(dto.getPrice())
+                .category(category)
                 .build();
     }
 
-    public static Product mapToProduct(ProductDto productDto) {
-        Product product = new Product();
-        product.setName(productDto.getName());
-        product.setDescription(productDto.getDescription());
-        product.setQuantity(productDto.getQuantity());
-        product.setPrice(productDto.getPrice());
-        return product;
+    public void updateEntity(Product entity, ProductRequestDto dto, Category category) {
+        if (entity == null || dto == null) return;
+
+        entity.setName(dto.getName());
+        entity.setDescription(dto.getDescription());
+        entity.setAvailableQuantity(dto.getAvailableQuantity());
+        entity.setPrice(dto.getPrice());
+        entity.setCategory(category);
+    }
+
+    public ProductResponseDto toResponseDto(Product entity) {
+        if (entity == null) return null;
+
+        return ProductResponseDto.builder()
+                .id(entity.getId())
+                .name(entity.getName())
+                .description(entity.getDescription())
+                .availableQuantity(entity.getAvailableQuantity())
+                .price(entity.getPrice())
+                .categoryId(entity.getCategory().getId())
+                .categoryName(entity.getCategory().getName())
+                .createdAt(entity.getCreatedAt())
+                .build();
     }
 }

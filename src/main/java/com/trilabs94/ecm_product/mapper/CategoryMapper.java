@@ -1,28 +1,36 @@
 package com.trilabs94.ecm_product.mapper;
 
-import com.trilabs94.ecm_product.dto.CategoryDto;
+import com.trilabs94.ecm_product.dto.CategoryRequestDto;
+import com.trilabs94.ecm_product.dto.CategoryResponseDto;
 import com.trilabs94.ecm_product.entity.Category;
+import org.springframework.stereotype.Component;
 
-import java.util.stream.Collectors;
-
+@Component
 public class CategoryMapper {
-    public static CategoryDto toCategoryDto(Category category) {
-        return CategoryDto.builder()
-                .name(category.getName())
-                .description(category.getDescription())
-                .products(
-                        category.getProducts()
-                                .stream()
-                                .map(ProductMapper::mapToProductDto)
-                                .collect(Collectors.toList())
-                )
+
+    public Category toEntity(CategoryRequestDto dto) {
+        if (dto == null) return null;
+
+        return Category.builder()
+                .name(dto.getName())
+                .description(dto.getDescription())
                 .build();
     }
 
-    public static Category toCategory(CategoryDto categoryDto) {
-        Category category = new Category();
-        category.setName(categoryDto.getName());
-        category.setDescription(categoryDto.getDescription());
-        return category;
+    public void updateEntity(Category category, CategoryRequestDto dto) {
+        if (category == null || dto == null) return;
+
+        category.setName(dto.getName());
+        category.setDescription(dto.getDescription());
+    }
+
+    public CategoryResponseDto toResponseDto(Category entity) {
+        if (entity == null) return null;
+
+        return CategoryResponseDto.builder()
+                .id(entity.getId())
+                .name(entity.getName())
+                .description(entity.getDescription())
+                .build();
     }
 }

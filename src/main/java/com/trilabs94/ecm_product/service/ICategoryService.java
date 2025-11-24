@@ -1,13 +1,19 @@
 package com.trilabs94.ecm_product.service;
 
-import com.trilabs94.ecm_product.dto.CategoryDto;
+import com.trilabs94.ecm_product.dto.CategoryRequestDto;
+import com.trilabs94.ecm_product.dto.CategoryResponseDto;
 
 import java.util.List;
 
 public interface ICategoryService {
-    List<CategoryDto> getAllCategories();
-    CategoryDto getCategoryById(Long id);
-    CategoryDto createCategory(CategoryDto categoryDto);
-    CategoryDto updateCategory(Long id, CategoryDto categoryDto);
+
+    CategoryResponseDto createCategory(CategoryRequestDto requestDto);
+
+    CategoryResponseDto updateCategory(Long id, CategoryRequestDto requestDto);
+
+    CategoryResponseDto getCategoryById(Long id);
+
+    List<CategoryResponseDto> getAllCategories();
+
     void deleteCategory(Long id);
 }
