@@ -2,13 +2,16 @@ package com.trilabs94.ecm_product.service.impl;
 
 import com.trilabs94.common_error_handler.exception.ResourceNotFoundException;
 import com.trilabs94.ecm_product.dto.CategoryDto;
+import com.trilabs94.ecm_product.dto.ProductDto;
 import com.trilabs94.ecm_product.entity.Category;
+import com.trilabs94.ecm_product.entity.Product;
 import com.trilabs94.ecm_product.mapper.CategoryMapper;
 import com.trilabs94.ecm_product.repository.ICategoryRepository;
 import com.trilabs94.ecm_product.service.ICategoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -18,7 +21,7 @@ public class CategoryService implements ICategoryService {
 
     @Override
     public List<CategoryDto> getAllCategories() {
-        return categoryRepository.findAll()
+        return categoryRepository.findCategoryWithProducts()
                 .stream()
                 .map(CategoryMapper::toCategoryDto)
                 .toList();
@@ -39,6 +42,16 @@ public class CategoryService implements ICategoryService {
             throw new ResourceNotFoundException("Category already exists with name: " + categoryDto.getName());
         } else {
             Category category = CategoryMapper.toCategory(categoryDto);
+            for(ProductDto product : categoryDto.getProducts()){
+                Product prodEntity = new Product();
+                prodEntity.setName(product.getName());
+                prodEntity.setDescription(product.getDescription());
+                prodEntity.setPrice(product.getPrice());
+                prodEntity.setCreatedAt(LocalDateTime.now());
+                prodEntity.setCategory(category);
+                category.getProducts().add(prodEntity);
+            }
+
             Category savedCategory = categoryRepository.save(category);
             return CategoryMapper.toCategoryDto(savedCategory);
         }

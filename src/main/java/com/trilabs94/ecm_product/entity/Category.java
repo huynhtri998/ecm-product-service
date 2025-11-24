@@ -3,6 +3,8 @@ package com.trilabs94.ecm_product.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.util.List;
+
 @Entity
 @Data
 @Table(name = "categories")
@@ -13,4 +15,7 @@ public class Category {
     private Long id;
     private String name;
     private String description;
+
+    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Product> products;
 }

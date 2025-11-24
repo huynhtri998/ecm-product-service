@@ -5,14 +5,16 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
+import java.time.LocalDateTime;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class CategoryDto {
+public class ProductDto {
     private String name;
     private String description;
-    private List<ProductDto> products;
+    private int quantity;
+    private double price;
+    private LocalDateTime createdAt;
 }

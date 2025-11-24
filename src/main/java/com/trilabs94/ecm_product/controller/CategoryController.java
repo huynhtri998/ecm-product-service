@@ -35,7 +35,11 @@ public class CategoryController {
     )
     @GetMapping("/categories/{id}")
     public ResponseEntity<CategoryDto> getCategoryById(@PathVariable Long id) {
-        return ResponseEntity.ok().body(categoryService.getCategoryById(id));
+        CategoryDto category = categoryService.getCategoryById(id);
+        if (category != null)
+            return ResponseEntity.ok().body(category);
+        else
+            return ResponseEntity.notFound().build();
     }
 
     @Operation(
@@ -44,6 +48,9 @@ public class CategoryController {
     )
     @PostMapping("/categories")
     public ResponseEntity<CategoryDto> createCategory(@RequestBody CategoryDto categoryDto) {
+        CategoryDto customerDto = categoryService.createCategory(categoryDto);
+        if (customerDto == null)
+            return ResponseEntity.badRequest().build();
         return ResponseEntity.ok().body(categoryService.createCategory(categoryDto));
     }
 
