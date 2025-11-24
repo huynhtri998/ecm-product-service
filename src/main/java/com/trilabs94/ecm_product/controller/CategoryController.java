@@ -14,7 +14,6 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.net.URI;
 import java.util.List;
 
-@Slf4j
 @RestController
 @RequestMapping("/api/v1/categories")
 @RequiredArgsConstructor
