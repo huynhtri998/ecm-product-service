@@ -1,6 +1,5 @@
 package com.trilabs94.ecm_product.service.impl;
 
-import com.trilabs94.common_error_handler.exception.CustomerAlreadyExistsException;
 import com.trilabs94.common_error_handler.exception.ResourceAlreadyExistsException;
 import com.trilabs94.common_error_handler.exception.ResourceNotFoundException;
 import com.trilabs94.ecm_product.dto.CategoryRequestDto;
