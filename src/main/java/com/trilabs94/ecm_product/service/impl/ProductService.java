@@ -1,6 +1,9 @@
 package com.trilabs94.ecm_product.service.impl;
 
+import com.trilabs94.common_error_handler.exception.BusinessException;
 import com.trilabs94.common_error_handler.exception.ResourceNotFoundException;
+import com.trilabs94.ecm_product.dto.ProductPurchaseRequest;
+import com.trilabs94.ecm_product.dto.ProductPurchaseResponse;
 import com.trilabs94.ecm_product.dto.ProductRequestDto;
 import com.trilabs94.ecm_product.dto.ProductResponseDto;
 import com.trilabs94.ecm_product.entity.Category;
@@ -15,6 +18,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -98,5 +106,51 @@ public class ProductService implements IProductService {
     private Category getCategoryOrThrow(Long categoryId) {
         return categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new ResourceNotFoundException("Category with id %d not found".formatted(categoryId)));
+    }
+
+    @Override
+    @Transactional
+    public List<ProductPurchaseResponse> purchaseProducts(List<ProductPurchaseRequest> requestBody) {
+
+        List<Long> productIds = requestBody.stream()
+                .map(ProductPurchaseRequest::getProductId)
+                .toList();
+
+        List<Product> products = productRepository.findAllById(productIds);
+
+        if (products.size() != productIds.size()) {
+            throw new ResourceNotFoundException("One or more products not found");
+        }
+
+        Map<Long, Product> productMap = products.stream()
+                .collect(Collectors.toMap(Product::getId, p -> p));
+
+        List<ProductPurchaseResponse> responses = new ArrayList<>();
+
+        for (ProductPurchaseRequest req : requestBody) {
+            Product product = productMap.get(req.getProductId());
+
+            if (product.getAvailableQuantity() < req.getQuantity()) {
+                throw new BusinessException(
+                        "Not enough stock for product id=" + product.getId()
+                );
+            }
+
+            product.setAvailableQuantity(
+                    product.getAvailableQuantity() - req.getQuantity()
+            );
+
+            responses.add(
+                    ProductPurchaseResponse.builder()
+                            .productId(product.getId())
+                            .quantity(req.getQuantity())
+                            .unitPrice(product.getPrice())
+                            .build()
+            );
+        }
+
+        productRepository.saveAll(products);
+
+        return responses;
     }
 }

@@ -1,5 +1,7 @@
 package com.trilabs94.ecm_product.controller;
 
+import com.trilabs94.ecm_product.dto.ProductPurchaseRequest;
+import com.trilabs94.ecm_product.dto.ProductPurchaseResponse;
 import com.trilabs94.ecm_product.dto.ProductRequestDto;
 import com.trilabs94.ecm_product.dto.ProductResponseDto;
 import com.trilabs94.ecm_product.service.IProductService;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/products")
@@ -175,5 +178,34 @@ public class ProductController {
     public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
         productService.deleteProduct(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @Operation(
+            summary = "Purchase products",
+            description = "Process the purchase of multiple products."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Products purchased",
+                    content = @Content(schema = @Schema(implementation = ProductPurchaseResponse.class))
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Validation error",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Product not found",
+                    content = @Content
+            )
+    })
+    @PostMapping("/purchase")
+    public ResponseEntity<List<ProductPurchaseResponse>> purchaseProducts(
+            @Valid @RequestBody List<ProductPurchaseRequest> requestBody
+    ) {
+        List<ProductPurchaseResponse> result = productService.purchaseProducts(requestBody);
+        return ResponseEntity.ok(result);
     }
 }
