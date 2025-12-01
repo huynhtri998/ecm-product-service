@@ -26,6 +26,10 @@ import java.util.List;
 @RequestMapping("/api/v1/products")
 @RequiredArgsConstructor
 @Validated
+@Schema(
+        name = "Product Controller",
+        description = "REST APIs for managing products in the Ecommerce Product Management System"
+)
 public class ProductController {
 
     private final IProductService productService;
