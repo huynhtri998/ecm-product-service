@@ -1,11 +1,13 @@
 package com.trilabs94.ecm_product.dto;
 
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -13,10 +15,9 @@ import lombok.NoArgsConstructor;
 @Builder
 public class ProductPurchaseRequest {
 
-    @NotNull(message = "Product id is required")
-    private Long productId;
+    private String orderReference;
 
-    @NotNull(message = "Quantity is required")
-    @Min(value = 1, message = "Quantity must be at least 1")
-    private Integer quantity;
+    @NotEmpty(message = "At least one item must be provided for purchase")
+    @Valid
+    private List<ItemPurchaseRequest> items;
 }

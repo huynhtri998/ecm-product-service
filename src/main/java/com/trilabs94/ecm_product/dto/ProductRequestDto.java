@@ -24,7 +24,7 @@ public class ProductRequestDto {
     private Integer availableQuantity;
 
     @NotNull(message = "Price is required")
-    @DecimalMin(value = "0.0", inclusive = true, message = "Price must be >= 0")
+    @DecimalMin(value = "0.1", inclusive = true, message = "Price must be >= 0")
     private BigDecimal price;
 
     @NotNull(message = "Category id is required")

@@ -6,15 +6,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class ProductPurchaseResponse {
-    private Long productId;
-    private String name;
-    private String description;
-    private Integer quantity;
-    private BigDecimal unitPrice;
+
+    private BigDecimal totalAmount;
+    private String orderReference;
+    private List<ItemPurchaseResponse> items;
 }

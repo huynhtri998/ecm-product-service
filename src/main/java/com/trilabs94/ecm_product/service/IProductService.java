@@ -22,6 +22,4 @@ public interface IProductService {
     Page<ProductResponseDto> getProductsByCategory(Long categoryId, Pageable pageable);
 
     void deleteProduct(Long id);
-
-    public List<ProductPurchaseResponse> purchaseProducts(List<ProductPurchaseRequest> requestBody);
 }
