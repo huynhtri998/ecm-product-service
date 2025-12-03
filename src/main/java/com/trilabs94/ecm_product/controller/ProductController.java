@@ -4,6 +4,7 @@ import com.trilabs94.ecm_product.dto.ProductPurchaseRequest;
 import com.trilabs94.ecm_product.dto.ProductPurchaseResponse;
 import com.trilabs94.ecm_product.dto.ProductRequestDto;
 import com.trilabs94.ecm_product.dto.ProductResponseDto;
+import com.trilabs94.ecm_product.service.IInventoryService;
 import com.trilabs94.ecm_product.service.IProductService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -33,6 +34,7 @@ import java.util.List;
 public class ProductController {
 
     private final IProductService productService;
+    private  final IInventoryService inventoryService;
 
     @Operation(
             summary = "Create a new product",
@@ -182,5 +184,37 @@ public class ProductController {
     public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
         productService.deleteProduct(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @Operation(
+            summary = "Purchase products",
+            description = "Purchase multiple products by providing their IDs and quantities."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Products purchased",
+                    content = @Content(schema = @Schema(implementation = ProductPurchaseResponse.class))
+            ),            @ApiResponse(
+                    responseCode = "400",
+                    description = "Validation error",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Product not found",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "409",
+                    description = "Insufficient stock for one or more products",
+                    content = @Content
+            )
+    })
+    @PostMapping("/purchase")
+    public ProductPurchaseResponse purchaseProducts(
+            @Valid @RequestBody ProductPurchaseRequest request
+    ) {
+        return inventoryService.purchaseProducts(request);
     }
 }
